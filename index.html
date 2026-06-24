@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="is">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gólfhitastillir</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Vafraapp fyrir eina gólfhitakistu</p>
+        <h1>Gólfhitastillir</h1>
+        <p class="subtitle">Grófstilling á rennslismælum fyrir gólfhitakistur.</p>
+      </div>
+      <div class="header-actions no-print">
+        <button class="secondary-button" type="button" id="newProjectButton">Nýtt verkefni</button>
+        <button class="primary-button" type="button" id="printButton">Prenta / vista PDF</button>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="print-report-header print-only">
+        <p class="eyebrow">Stilliskýrsla</p>
+        <h2>Gólfhitastillir</h2>
+        <div class="print-meta">
+          <span id="printAddress">Heimilisfang vantar</span>
+          <span id="printCabinet">Kista / hæð vantar</span>
+          <span id="printDate"></span>
+        </div>
+      </section>
+
+      <section class="panel project-panel" aria-labelledby="projectHeading">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Verkefni</p>
+            <h2 id="projectHeading">Upplýsingar</h2>
+          </div>
+          <span class="save-state" id="saveState">Vistað sjálfkrafa</span>
+        </div>
+
+        <div class="form-grid project-grid">
+          <label>
+            <span>Heimilisfang</span>
+            <input id="address" type="text" placeholder="Heiðarvegur 10" autocomplete="off">
+          </label>
+          <label>
+            <span>Kista / hæð</span>
+            <input id="cabinetName" type="text" placeholder="t.d. 1. hæð" autocomplete="off">
+          </label>
+          <label>
+            <span>Fjöldi loka</span>
+            <input id="loopCount" type="number" min="1" max="24" step="1" inputmode="numeric">
+          </label>
+        </div>
+      </section>
+
+      <section class="action-bar no-print" aria-label="Aðgerðir">
+        <button class="secondary-button" type="button" id="settingsButton" aria-haspopup="dialog" aria-expanded="false">Forsendur</button>
+        <button class="secondary-button" type="button" id="pumpButton" aria-haspopup="dialog" aria-expanded="false">Dæla</button>
+        <button class="primary-button" type="button" id="calculateButton">Reikna</button>
+      </section>
+
+      <section class="summary-grid" aria-label="Samantekt">
+        <article class="metric">
+          <span>Kista / hæð</span>
+          <strong id="cabinetSummary">Óskráð</strong>
+          <small id="methodSummary">Eftir slaufulengd</small>
+        </article>
+        <article class="metric">
+          <span>Forsendur</span>
+          <strong id="settingsSummary">0,022 l/mín á m</strong>
+          <small id="methodDetail">Slöngubil 150 mm</small>
+        </article>
+        <article class="metric">
+          <span>Dæla</span>
+          <strong>Grundfos UPM3</strong>
+          <small>CP AA / AUTOADAPT</small>
+        </article>
+        <article class="metric accent">
+          <span>Heildarrennsli kistu</span>
+          <strong id="totalFlow">0,0 l/mín</strong>
+          <small>Samkvæmt skráðum lokum</small>
+        </article>
+      </section>
+
+      <section class="panel loops-panel" aria-labelledby="loopsHeading">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Stillitafla</p>
+            <h2 id="loopsHeading">Stilla rennslismæli á</h2>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr id="loopTableHead"></tr>
+            </thead>
+            <tbody id="loopRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="bottom-note">Ef kista er með rennslismælum skal l/mín gildið vera aðalstilling. Gróf hringstilling er aðeins byrjun og þarf að fínstilla á staðnum.</p>
+    </main>
+
+    <div class="modal-backdrop no-print" id="modalBackdrop" hidden></div>
+
+    <section class="modal-window no-print" id="settingsPanel" hidden role="dialog" aria-modal="true" aria-labelledby="settingsHeading">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Forsendur</p>
+          <h2 id="settingsHeading">Reikniaðferð</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-modal aria-label="Loka forsendum">×</button>
+      </div>
+
+      <div class="method-toggle" role="radiogroup" aria-label="Reikniaðferð">
+        <label class="method-option">
+          <input type="radio" name="calculationMethod" value="length">
+          <span>
+            <strong>Eftir slaufulengd</strong>
+            <small>Reiknar l/mín út frá lengd og völdu slöngubili.</small>
+          </span>
+        </label>
+        <label class="method-option">
+          <input type="radio" name="calculationMethod" value="area">
+          <span>
+            <strong>Eftir fermetrum</strong>
+            <small>Nákvæmara þegar stærð rýmis er þekkt.</small>
+          </span>
+        </label>
+      </div>
+
+      <div class="form-grid settings-grid">
+        <label class="area-setting">
+          <span>W/m²</span>
+          <input id="wattsPerSquareMeter" type="text" inputmode="decimal">
+        </label>
+        <label class="area-setting">
+          <span>ΔT °C</span>
+          <input id="deltaT" type="text" inputmode="decimal">
+        </label>
+        <label>
+          <span>Slöngubil</span>
+          <select id="pipeSpacing">
+            <option value="100">100 mm = 0,014 l/mín á m</option>
+            <option value="150">150 mm = 0,022 l/mín á m</option>
+            <option value="200">200 mm = 0,029 l/mín á m</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="modal-window no-print" id="pumpPanel" hidden role="dialog" aria-modal="true" aria-labelledby="pumpHeading">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">Dæla</p>
+          <h2 id="pumpHeading">Dælutegund</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-modal aria-label="Loka dælu">×</button>
+      </div>
+
+      <label class="pump-select-label">
+        <span>Veldu dælu</span>
+        <select id="pumpType">
+          <option value="grundfos-upm3-auto-16-70">Grundfos UPM3 AUTO 16-70</option>
+        </select>
+      </label>
+
+      <div class="pump-info">
+        <p class="pump-setting">Ráðlögð byrjunarstilling: <strong>CP AA / Constant Pressure AUTOADAPT</strong></p>
+        <p class="note">Ef rennsli næst ekki á lengstu slaufum með öllum slaufum opnum má prófa CP2.</p>
+      </div>
+
+      <button class="secondary-button add-pump-button" type="button" disabled>+ Bæta við dælutegund</button>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>
